@@ -21,7 +21,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
 1. Clone this repo on the on-premise Hadoop cluster
 2. Use the Hadoop tool `distcp` to copy data from the source HDFS cluster to the Data Box
 3. Ship the Data Box to Azure and have the data loaded into a non-HNS enabled Storage Account
-4. Use the Hadoop tool `distcp` to copy data from the non-HNS enabled Storage Account to the HNS-enabled ADLS Gen2 account
+4. Use a data transfer tool to copy data from the non-HNS enabled Storage Account to the HNS-enabled ADLS Gen2 account
 5. Translate and copy permissions from the HDFS cluster to the ADLS Gen2 account using the supplied scripts
 
 ## Step 1 - Clone Github repository to download required scripts
@@ -50,7 +50,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
     azjars=$azjars,$hadoop_install_dir/share/hadoop/tools/lib/microsoft-windowsazure-storage-sdk-0.6.0.jar
     ```
 
-6. Create a service principal & grant 'Storage Blobs Data Owner' role membership. Record the client id & secret, so that these values can be used to authenticate to the ADLS Gen2 account in the steps below.
+6. [Create a service principal & grant 'Storage Blobs Data Owner' role membership](https://docs.microsoft.com/azure/storage/common/storage-auth-aad-rbac-portal). Record the client id & secret, so that these values can be used to authenticate to the ADLS Gen2 account in the steps below.
 
 
 ## Step 2 - Distcp data from HDFS to Data Box
@@ -98,19 +98,19 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
     .*/hbase/data/WALs.*
     ```
 
-6. Create the storage container that you want to use for data copy. You should also specify a destination folder as part of this command. This could be a dummy destination folder at this point.
+6. Create the storage container on the Data Box that you want to use for data copy. You should also specify a destination directory as part of this command. This could be a dummy destination directory at this point.
 
     ```
     hadoop fs [-libjars $azjars] \
     -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.{databox_blob_service_endpoint}={account_key} \
-    -mkdir -p  wasb://{container_name}@{databox_blob_service_endpoint}/[destination_folder]
+    -mkdir -p  wasb://{container_name}@{databox_blob_service_endpoint}/[destination_dir]
     ```
 
-7. Run a list command to ensure that your container and folder were created.
+7. Run a list command to ensure that your container and directory were created.
 
     ```
-    # hadoop fs [-libjars $azjars] \
+    hadoop fs [-libjars $azjars] \
     -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.{databox_blob_service_endpoint}={account_key} \
     -ls -R  wasb://{container_name}@{databox_blob_service_endpoint}/
@@ -134,7 +134,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
     hadoop distcp -libjars $azjars \
     -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.mystorageaccount.blob.mydataboxno.microsoftdatabox.com=myaccountkey \
-    -filter ./exclusions.lst -f /tmp/copylist1 -m 4
+    -filter ./exclusions.lst -f /tmp/copylist1 -m 4 \
     wasb://hdfscontainer@mystorageaccount.blob.mydataboxno.microsoftdatabox.com/data
    ```
   
@@ -151,9 +151,9 @@ Follow these steps to prepare and ship the Data Box device to Microsoft.
 2.	Schedule a pickup with UPS to [Ship your Data Box back to Azure](https://docs.microsoft.com/azure/databox/data-box-deploy-picked-up). 
 3.	After Microsoft receives your device, it is connected to the network datacenter and data is uploaded to the storage account you specified (with Hierarchical Namespace disabled) when you ordered the Data Box. Verify against the BOM files that all your data is uploaded to Azure. You can now move this data to a Data Lake Storage Gen2 storage account.
 
-## Move the data onto your Data Lake Storage Gen2 storage account
+## Step 4 - Move the data onto your Data Lake Storage Gen2 storage account
 
-To most efficiently perform analytics operations on your data in Azure, you will need to copy the data to a storage account with the Hierarchical Namespace enabled - an Azure Data Lake Storage Gen2 account.
+To most efficiently perform analytics operations on your data in Azure, you will need to copy the data to a storage account with the [Hierarchical Namespace](https://docs.microsoft.com/azure/storage/blobs/data-lake-storage-namespace) enabled - an Azure Data Lake Storage Gen2 account.
 
 You can do this in 2 ways. 
 
