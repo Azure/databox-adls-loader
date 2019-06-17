@@ -4,17 +4,25 @@ import sys, subprocess, logging, itertools, argparse
 
 log = logging.getLogger(__name__)
 
+def parseUsageLine(line, sourceDir):
+    # Various distros/configurations of Hadoop can have either 2 or 3 columns as the response for the du command.
+    # All of these variants place the pathname as the last value. We have to search for the prefix & do manipulation
+    # from there
+    nameIdx = line.find(sourceDir)
+    parsedLine = line[0:nameIdx].split()
+    return {
+        'path': line[nameIdx:].rstrip(),
+        'size': int(parsedLine[0]),
+        'unit': 0
+    }
+
 def processDirectoryIntoUnits(sourceDir, unitSize, dirAllocations, unitsSpaceAvailable):
     log.info("Calculating directory sizes for '%s'", sourceDir)
     startIdx = len(dirAllocations)
     process = subprocess.Popen("hadoop fs -du -x '{0}'".format(sourceDir), stdout=subprocess.PIPE, shell=True)
     retcode = process.wait()
     if retcode == 0:
-        dirAllocations += [{
-            'path': line.split(None, 2)[2].rstrip(),
-            'size': int(line.split()[0]),
-            'unit': 0
-        } for line in process.stdout]
+        dirAllocations += [parseUsageLine(line, sourceDir) for line in process.stdout]
         recurseDirs = []
         for dirIdx in range(startIdx, len(dirAllocations)):
             if dirAllocations[dirIdx]["size"] > unitSize:
