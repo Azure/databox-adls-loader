@@ -19,6 +19,12 @@ hdp_version=$(hdp-select versions)
 mapred_fx_path=$(echo $mapred_fx_path | sed -e 's/${hdp.version}/'$hdp_version'/g')
 mapred_fx_path=$(echo $mapred_fx_path | cut -d '#' -f1)
 
+if [ -z "$mapred_fx_path" ]; 
+then
+    echo "Unable to locate Mapreduce framework archive. Quitting"
+    exit 2
+fi
+
 # Now that we have our location, download the archive from HDFS, make adjustments, re-tar the archive & copy it back to HDFS
 echo "Searching for archives: $mapred_fx_path"
 tarballs="$(hadoop fs -ls $mapred_fx_path | tr -s ' ' | cut -d ' ' -f8)"
