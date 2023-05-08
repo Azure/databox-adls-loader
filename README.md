@@ -102,7 +102,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
 
     ```
     hadoop fs [-libjars $azjars] \
-    -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
+    -D fs.AbstractFileSystem.wasb.impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.{databox_blob_service_endpoint}={account_key} \
     -mkdir -p  wasb://{container_name}@{databox_blob_service_endpoint}/[destination_dir]
     ```
@@ -111,7 +111,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
 
     ```
     hadoop fs [-libjars $azjars] \
-    -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
+    -D fs.AbstractFileSystem.wasb.impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.{databox_blob_service_endpoint}={account_key} \
     -ls -R  wasb://{container_name}@{databox_blob_service_endpoint}/
     ```
@@ -121,7 +121,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
     ```bash
     sudo -u hdfs \
     hadoop distcp [-libjars $azjars] \
-    -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
+    -D fs.AbstractFileSystem.wasb.impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.{databox_blob_service_endpoint}={account_key} \
     -filters {exclusion_filelist_file} \
     [-f filelist_file | /[source directory]] wasb://{container_name}@{databox_blob_service_endpoint}/[path]
@@ -132,7 +132,7 @@ The mechanism to copy data from an on-premise HDFS cluster to ADLS Gen2 relies o
     ```
     sudo -u hdfs \
     hadoop distcp -libjars $azjars \
-    -D fs.AbstractFileSystem.wasb.Impl=org.apache.hadoop.fs.azure.Wasb \
+    -D fs.AbstractFileSystem.wasb.impl=org.apache.hadoop.fs.azure.Wasb \
     -D fs.azure.account.key.mystorageaccount.blob.mydataboxno.microsoftdatabox.com=myaccountkey \
     -filter ./exclusions.lst -f /tmp/copylist1 -m 4 \
     wasb://hdfscontainer@mystorageaccount.blob.mydataboxno.microsoftdatabox.com/data
